@@ -1,0 +1,27 @@
+apps:
+  name: ares
+  grpcPort: 8080
+  mode: dev
+logger:
+  fileLocation: logs/full.log
+  fileMaxAge: 10
+  stdout: true
+  mask:
+parameter: # this sections are hot reload, no need to restart for changes
+database:
+  username:
+  password:
+  schema: ares
+  host:
+  port:
+  minIdleConnections: 1
+  MaxOpenConnections: 5
+  logMode: false
+  sslMode: disable
+  location: Asia/Jakarta
+cache:
+  address:
+  index:
+    default: 0
+    content: 1
+    security: 2

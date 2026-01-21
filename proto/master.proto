@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ares;
+option go_package = "./proto";
+import "google/protobuf/any.proto";
+
+service RuleEngine {
+  rpc Transaction (Request) returns (Response);
+}
+
+message Request {
+  string clientId = 1;
+  string transactionId = 2;
+  google.protobuf.Any payload = 3;
+}
+
+message Response {
+  string transactionId = 1;
+  int64 code = 2;
+  string description = 3;
+}
