@@ -9,13 +9,15 @@ service RuleEngine {
 }
 
 message Request {
-  string clientId = 1;
-  string transactionId = 2;
-  google.protobuf.Any payload = 3;
+  string traceId = 1;
+  string clientId = 2;
+  string transactionId = 3;
+  google.protobuf.Any payload = 4;
 }
 
 message Response {
-  string transactionId = 1;
-  int64 code = 2;
-  string description = 3;
+  string traceId = 1;
+  string transactionId = 2;
+  int64 code = 3;
+  string description = 4;
 }

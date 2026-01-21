@@ -16,7 +16,11 @@ func StartServer() {
 		return
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			PanicRecoveryInterceptor,
+		),
+	)
 	presenter := container.New()
 
 	proto.RegisterRuleEngineServer(s, presenter.Handler)

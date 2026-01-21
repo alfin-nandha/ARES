@@ -16,6 +16,7 @@ func NewGrpcHandler(service service.ServiceInt) RuleEngineServer {
 	}
 }
 
-func (h *Handler) Transaction(context.Context, *Request) (*Response, error) {
+func (h *Handler) Transaction(ctx context.Context, req *Request) (resp *Response, err error) {
+
 	return nil, nil
 }

@@ -5,11 +5,10 @@ import (
 	"ares/pkg/database"
 	"ares/pkg/logger"
 	"ares/pkg/redis"
+	"ares/pkg/session"
 	"ares/proto"
 	"ares/repository"
 	"ares/service"
-	"encoding/json"
-	"fmt"
 )
 
 type Presenter struct {
@@ -20,11 +19,13 @@ type Presenter struct {
 
 func New() Presenter {
 	param := config.Param
-	b, _ := json.Marshal(param)
-	fmt.Println(string(b))
 	logger.New(param.Logger)
-	dbClient := database.New(param.Database)
-	redis := redis.New(param.Cache)
+
+	startUpSession := session.New()
+	startUpSession.SetTraceId("START UP")
+
+	dbClient := database.New(startUpSession, param.Database)
+	redis := redis.New(startUpSession, param.Cache)
 	repo := repository.New(dbClient)
 	serv := service.New(repo, redis)
 	hand := proto.NewGrpcHandler(serv)

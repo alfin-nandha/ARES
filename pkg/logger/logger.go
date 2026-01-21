@@ -25,7 +25,7 @@ type Options struct {
 	Mask         []string      `json:"mask"`
 }
 
-func New(config Options) {
+func New(config Options) *Logger {
 	var cores []zapcore.Core
 
 	var writer zapcore.WriteSyncer
@@ -54,10 +54,15 @@ func New(config Options) {
 		zap.AddCaller(),
 	)
 
+	// return &Logger{
+	// 	loggerSys: loggerSys,
+	// 	mask:      config.Mask,
+	// }
 	Log = &Logger{
 		loggerSys: loggerSys,
 		mask:      config.Mask,
 	}
+	return Log
 }
 
 func getEncoder() zapcore.Encoder {

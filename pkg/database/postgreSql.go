@@ -2,7 +2,7 @@ package database
 
 import (
 	"ares/pkg/config"
-	"ares/pkg/logger"
+	"ares/pkg/session"
 	"context"
 	"fmt"
 	"log"
@@ -12,18 +12,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(config config.Database) *gorm.DB {
+func New(session *session.Session, config config.Database) *gorm.DB {
 
 	dbConn, err := dbOpen(config)
 	if err != nil {
-		logger.Log.Error("DB Connection - " + err.Error())
+		session.LogError("DB Connection - ", err)
 		err = nil
 		if dbConn, err = dbOpen(config); err != nil {
-			logger.Log.Error("DB Connection Second Try - " + err.Error())
+			session.LogError("DB Connection Second Try - ", err)
 			log.Fatal("Couldn't connect to postgreSql")
 		}
 	}
-	logger.Log.Info("PostgreSQL Connected")
+	session.LogInfo("PostgreSQL Connected")
 	return dbConn
 }
 

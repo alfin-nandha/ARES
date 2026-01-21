@@ -24,9 +24,10 @@ const (
 
 type Request struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ClientId      string                 `protobuf:"bytes,1,opt,name=clientId,proto3" json:"clientId,omitempty"`
-	TransactionId string                 `protobuf:"bytes,2,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
-	Payload       *anypb.Any             `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	TraceId       string                 `protobuf:"bytes,1,opt,name=traceId,proto3" json:"traceId,omitempty"`
+	ClientId      string                 `protobuf:"bytes,2,opt,name=clientId,proto3" json:"clientId,omitempty"`
+	TransactionId string                 `protobuf:"bytes,3,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
+	Payload       *anypb.Any             `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,6 +62,13 @@ func (*Request) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{0}
 }
 
+func (x *Request) GetTraceId() string {
+	if x != nil {
+		return x.TraceId
+	}
+	return ""
+}
+
 func (x *Request) GetClientId() string {
 	if x != nil {
 		return x.ClientId
@@ -84,9 +92,10 @@ func (x *Request) GetPayload() *anypb.Any {
 
 type Response struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TransactionId string                 `protobuf:"bytes,1,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
-	Code          int64                  `protobuf:"varint,2,opt,name=code,proto3" json:"code,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	TraceId       string                 `protobuf:"bytes,1,opt,name=traceId,proto3" json:"traceId,omitempty"`
+	TransactionId string                 `protobuf:"bytes,2,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
+	Code          int64                  `protobuf:"varint,3,opt,name=code,proto3" json:"code,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -121,6 +130,13 @@ func (*Response) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *Response) GetTraceId() string {
+	if x != nil {
+		return x.TraceId
+	}
+	return ""
+}
+
 func (x *Response) GetTransactionId() string {
 	if x != nil {
 		return x.TransactionId
@@ -146,15 +162,17 @@ var File_proto_master_proto protoreflect.FileDescriptor
 
 const file_proto_master_proto_rawDesc = "" +
 	"\n" +
-	"\x12proto/master.proto\x12\x04ares\x1a\x19google/protobuf/any.proto\"{\n" +
-	"\aRequest\x12\x1a\n" +
-	"\bclientId\x18\x01 \x01(\tR\bclientId\x12$\n" +
-	"\rtransactionId\x18\x02 \x01(\tR\rtransactionId\x12.\n" +
-	"\apayload\x18\x03 \x01(\v2\x14.google.protobuf.AnyR\apayload\"f\n" +
-	"\bResponse\x12$\n" +
-	"\rtransactionId\x18\x01 \x01(\tR\rtransactionId\x12\x12\n" +
-	"\x04code\x18\x02 \x01(\x03R\x04code\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription2:\n" +
+	"\x12proto/master.proto\x12\x04ares\x1a\x19google/protobuf/any.proto\"\x95\x01\n" +
+	"\aRequest\x12\x18\n" +
+	"\atraceId\x18\x01 \x01(\tR\atraceId\x12\x1a\n" +
+	"\bclientId\x18\x02 \x01(\tR\bclientId\x12$\n" +
+	"\rtransactionId\x18\x03 \x01(\tR\rtransactionId\x12.\n" +
+	"\apayload\x18\x04 \x01(\v2\x14.google.protobuf.AnyR\apayload\"\x80\x01\n" +
+	"\bResponse\x12\x18\n" +
+	"\atraceId\x18\x01 \x01(\tR\atraceId\x12$\n" +
+	"\rtransactionId\x18\x02 \x01(\tR\rtransactionId\x12\x12\n" +
+	"\x04code\x18\x03 \x01(\x03R\x04code\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription2:\n" +
 	"\n" +
 	"RuleEngine\x12,\n" +
 	"\vTransaction\x12\r.ares.Request\x1a\x0e.ares.ResponseB\tZ\a./protob\x06proto3"
