@@ -12,9 +12,9 @@ import (
 )
 
 type Presenter struct {
-	Handler proto.RuleEngineServer
-	Redis   redis.RedisInt
-	service service.ServiceInt
+	GrpcHandler proto.RuleEngineServer
+	Redis       redis.RedisInt
+	service     service.ServiceInt
 }
 
 func New() Presenter {
@@ -28,9 +28,10 @@ func New() Presenter {
 	redis := redis.New(startUpSession, param.Cache)
 	repo := repository.New(dbClient)
 	serv := service.New(repo, redis)
-	hand := proto.NewGrpcHandler(serv)
+
+	grpcHandler := service.NewGrpcHandler(serv)
 	return Presenter{
-		Handler: hand,
-		service: serv,
+		GrpcHandler: grpcHandler,
+		service:     serv,
 	}
 }

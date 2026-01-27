@@ -2,6 +2,8 @@ package service
 
 import (
 	"ares/pkg/redis"
+	"ares/pkg/session"
+	"ares/proto"
 	"ares/repository"
 )
 
@@ -11,6 +13,7 @@ type Service struct {
 }
 
 type ServiceInt interface {
+	Transaction(session *session.Session, request *proto.Request) (*proto.Response, error)
 }
 
 func New(repo repository.RepositoryInt, redis redis.RedisInt) ServiceInt {

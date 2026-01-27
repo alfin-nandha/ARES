@@ -27,28 +27,29 @@ type Options struct {
 
 func New(config Options) *Logger {
 	var cores []zapcore.Core
-
 	var writer zapcore.WriteSyncer
 
+	rotate, err := RotateLogs.New(
+		config.FileLocation+".%Y-%m-%d",
+		RotateLogs.WithMaxAge(config.FileMaxAge*24*time.Hour),
+		RotateLogs.WithRotationTime(time.Hour),
+	)
+	if err != nil {
+		panic(err)
+	}
+	writer = zapcore.AddSync(rotate)
+
+	fileCore := zapcore.NewCore(getEncoder(), writer, zapcore.InfoLevel)
+	cores = append(cores, fileCore)
+
+	// also write on stdout
 	if config.Stdout {
 		writer = zapcore.AddSync(os.Stdout)
-	} else {
-		rotate, err := RotateLogs.New(
-			config.FileLocation+".%Y-%m-%d",
-			RotateLogs.WithMaxAge(config.FileMaxAge*24*time.Hour),
-			RotateLogs.WithRotationTime(time.Hour),
-		)
-		if err != nil {
-			panic(err)
-		}
-		writer = zapcore.AddSync(rotate)
+		stdoutCore := zapcore.NewCore(getEncoder(), writer, zapcore.InfoLevel)
+		cores = append(cores, stdoutCore)
 	}
 
-	core := zapcore.NewCore(getEncoder(), writer, zapcore.InfoLevel)
-	cores = append(cores, core)
-
 	combinedCore := zapcore.NewTee(cores...)
-
 	loggerSys := zap.New(combinedCore,
 		zap.AddCallerSkip(3),
 		zap.AddCaller(),
@@ -97,8 +98,8 @@ func (l *Logger) Info(message string, fields ...zap.Field) {
 // 	l.loggerTdr.Info(message, fields...)
 // }
 
-func (l *Logger) MaskData(request interface{}) interface{} {
-	data := map[string]interface{}{}
+func (l *Logger) MaskData(request any) any {
+	data := map[string]any{}
 	helper.ObjectToObject(request, &data)
 
 	for _, key := range l.mask {

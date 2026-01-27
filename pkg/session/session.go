@@ -17,26 +17,31 @@ import (
 )
 
 type Session struct {
-	Map             Map.ConcurrentMap
-	Logger          *logger.Logger
-	RequestTime     time.Time
-	Method          string
-	Url             string
-	TraceId         string
-	AppName         string
-	Header, Request any
-	Ctx             context.Context
+	Map                       Map.ConcurrentMap
+	logger                    *logger.Logger
+	ClientId                  int
+	RequestTime               time.Time
+	Method                    string
+	Url                       string
+	TraceId                   string
+	AppName                   string
+	Header, Request, MetaData any
+	Ctx                       context.Context
 }
 
 func New() *Session {
 	return &Session{
 		RequestTime: time.Now(),
-		Logger:      logger.Log,
+		logger:      logger.Log,
 		Map:         Map.New(),
 		Ctx:         context.Background(),
 	}
 }
 
+func (session *Session) SetClientId(clientId int) *Session {
+	session.ClientId = clientId
+	return session
+}
 func (session *Session) SetTraceId(traceId string) *Session {
 	session.TraceId = traceId
 	return session
@@ -61,6 +66,10 @@ func (session *Session) SetHeader(header any) *Session {
 	session.Header = header
 	return session
 }
+func (session *Session) SetMetaData(md any) *Session {
+	session.MetaData = md
+	return session
+}
 
 func (session *Session) SetRequest(request any) *Session {
 	session.Request = request
@@ -80,7 +89,7 @@ func (session *Session) Put(key string, data any) {
 }
 
 func (session *Session) LogDatabase(sql string, rows int64, error any, timeDuration time.Duration) {
-	session.Logger.Info("INFO",
+	session.logger.Info("INFO",
 		zap.String("TraceId", session.TraceId),
 		zap.String("SQL", sql),
 		zap.Any("Rows", rows),
@@ -90,29 +99,36 @@ func (session *Session) LogDatabase(sql string, rows int64, error any, timeDurat
 }
 
 func (session *Session) LogRequest(message ...any) {
-	session.Logger.Info("INFO",
+	fields := []zap.Field{
 		zap.String("TraceId", session.TraceId),
 		zap.String("Method", session.Method),
 		zap.String("URI", session.Url),
-		zap.Any("Request", session.Logger.MaskData(session.Request)),
-		zap.Any("Header", session.Header),
-		zap.String("Message", formatResponse(message...)),
-	)
+		zap.Any("Request", session.logger.MaskData(session.Request)),
+		zap.Any("Message", message),
+	}
+	if session.Header != nil {
+		fields = append(fields, zap.Any("Header", session.Header))
+	}
+	if session.MetaData != nil {
+		fields = append(fields, zap.Any("MetaData", session.MetaData))
+	}
+	session.logger.Info("INFO", fields...)
 }
 
-func (session *Session) LogResponse(timeDuration time.Duration, code int, url string, method string, response any) {
-	session.Logger.Info("INFO",
+func (session *Session) LogResponse(timeDuration time.Duration, code string, response any, msg string) {
+	session.logger.Info("INFO",
 		zap.String("TraceId", session.TraceId),
-		zap.String("Method", method),
-		zap.String("Url", url),
-		zap.Int("HttpStatus", code),
+		zap.String("Method", session.Method),
+		zap.String("URI", session.Url),
+		zap.String("Code", code),
 		zap.Any("Response", response),
+		zap.Any("Message", msg),
 		zap.String("ProcessTime", fmt.Sprintf("%d ms", timeDuration/time.Millisecond)),
 	)
 }
 
 func (session *Session) LogInfo(message any, data ...any) {
-	session.Logger.Info("INFO",
+	session.logger.Info("INFO",
 		zap.String("TraceId", session.TraceId),
 		zap.Any("Message", message),
 		zap.Any("Data", data),
@@ -120,7 +136,7 @@ func (session *Session) LogInfo(message any, data ...any) {
 }
 
 func (session *Session) LogError(message any, data any) {
-	session.Logger.Info("Error",
+	session.logger.Info("Error",
 		zap.String("TraceId", session.TraceId),
 		zap.Any("Message", message),
 		zap.Any("Data", data),
