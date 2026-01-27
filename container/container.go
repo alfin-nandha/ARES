@@ -1,6 +1,7 @@
 package container
 
 import (
+	"ares/handler"
 	"ares/pkg/config"
 	"ares/pkg/database"
 	"ares/pkg/logger"
@@ -13,11 +14,12 @@ import (
 
 type Presenter struct {
 	GrpcHandler proto.RuleEngineServer
+	HttpHandler handler.HttpHandler
 	Redis       redis.RedisInt
 	service     service.ServiceInt
 }
 
-func New() Presenter {
+func New() (*Presenter, *session.Session) {
 	param := config.Param
 	logger.New(param.Logger)
 
@@ -29,9 +31,11 @@ func New() Presenter {
 	repo := repository.New(dbClient)
 	serv := service.New(repo, redis)
 
-	grpcHandler := service.NewGrpcHandler(serv)
-	return Presenter{
+	grpcHandler := handler.NewGrpc(serv)
+	httpHandler := handler.NewHttp(serv)
+	return &Presenter{
 		GrpcHandler: grpcHandler,
+		HttpHandler: *httpHandler,
 		service:     serv,
-	}
+	}, startUpSession
 }

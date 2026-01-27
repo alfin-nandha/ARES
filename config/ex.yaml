@@ -1,7 +1,9 @@
 apps:
   name: ares
-  grpcPort: 8080
   mode: dev
+  grpcPort: 8079
+  httpPort: 8078
+  baseUrl: /ares
 logger:
   fileLocation: logs/full.log
   fileMaxAge: 10

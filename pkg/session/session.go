@@ -17,16 +17,16 @@ import (
 )
 
 type Session struct {
-	Map                       Map.ConcurrentMap
-	logger                    *logger.Logger
-	ClientId                  int
-	RequestTime               time.Time
-	Method                    string
-	Url                       string
-	TraceId                   string
-	AppName                   string
-	Header, Request, MetaData any
-	Ctx                       context.Context
+	Map                              Map.ConcurrentMap
+	logger                           *logger.Logger
+	ClientId                         int
+	RequestTime                      time.Time
+	Method                           string
+	Url                              string
+	TraceId                          string
+	AppName                          string
+	Header, Query, Request, MetaData any
+	Ctx                              context.Context
 }
 
 func New() *Session {
@@ -66,6 +66,11 @@ func (session *Session) SetHeader(header any) *Session {
 	session.Header = header
 	return session
 }
+func (session *Session) SetQuery(query any) *Session {
+	session.Query = query
+	return session
+}
+
 func (session *Session) SetMetaData(md any) *Session {
 	session.MetaData = md
 	return session
@@ -86,6 +91,11 @@ func (session *Session) Get(key string) (data any, err error) {
 
 func (session *Session) Put(key string, data any) {
 	session.Map.Set(key, data)
+}
+
+func (session *Session) String() string {
+	b, _ := json.Marshal(session)
+	return string(b)
 }
 
 func (session *Session) LogDatabase(sql string, rows int64, error any, timeDuration time.Duration) {
@@ -111,6 +121,9 @@ func (session *Session) LogRequest(message ...any) {
 	}
 	if session.MetaData != nil {
 		fields = append(fields, zap.Any("MetaData", session.MetaData))
+	}
+	if session.Query != nil {
+		fields = append(fields, zap.Any("Query", session.Query))
 	}
 	session.logger.Info("INFO", fields...)
 }

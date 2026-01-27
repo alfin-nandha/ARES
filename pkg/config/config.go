@@ -37,8 +37,10 @@ type Configuration struct {
 
 type Apps struct {
 	Name     string
-	GrpcPort int
 	Mode     string
+	GrpcPort int
+	HttpPort int
+	BaseUrl  string
 }
 
 type Library struct {

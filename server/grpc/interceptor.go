@@ -1,4 +1,4 @@
-package server
+package grpc
 
 import (
 	"ares/helper/vo"
@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func PanicRecoveryInterceptor(
+func panicRecoveryInterceptor(
 	ctx context.Context,
 	req any,
 	info *grpc.UnaryServerInfo,
@@ -33,7 +33,7 @@ func PanicRecoveryInterceptor(
 	return handler(ctx, req)
 }
 
-func SessionInterceptor(
+func sessionInterceptor(
 	ctx context.Context,
 	req any,
 	info *grpc.UnaryServerInfo,
@@ -61,7 +61,7 @@ func SessionInterceptor(
 	return handler(newCtx, req)
 }
 
-func LogInterceptor(
+func logInterceptor(
 	ctx context.Context,
 	req any,
 	info *grpc.UnaryServerInfo,
@@ -89,7 +89,7 @@ func LogInterceptor(
 	return
 }
 
-func AuthInterceptor(
+func authInterceptor(
 	ctx context.Context,
 	req any,
 	info *grpc.UnaryServerInfo,
@@ -100,7 +100,7 @@ func AuthInterceptor(
 		return nil, status.Error(codes.Unauthenticated, "no metadata provided")
 	}
 
-	traceId := fmt.Sprintf("trc-%d", time.Now().UnixNano())
+	traceId := vo.GenerateTraceId()
 	metaTraceId := md.Get(vo.TraceId)
 	if len(metaTraceId) != 0 {
 		traceId = metaTraceId[0]

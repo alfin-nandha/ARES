@@ -3,6 +3,8 @@ package vo
 import (
 	"ares/pkg/session"
 	"context"
+	"strconv"
+	"time"
 )
 
 const (
@@ -14,6 +16,10 @@ const (
 type ApplicationContext struct {
 	context.Context
 	Session *session.Session
+}
+
+func GenerateTraceId() string {
+	return strconv.Itoa(int(time.Now().UnixMilli()))
 }
 
 func Parse(c context.Context) *ApplicationContext {
