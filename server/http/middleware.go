@@ -27,7 +27,7 @@ func middlewareSetup(app *fiber.App, container *Container.Presenter) {
 func recoveryMiddleware(c fiber.Ctx) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			session := vo.Parse(c.Context()).Session
+			session := vo.Parse(c).Session
 
 			// Capture the stack trace
 			stackTrace := make([]byte, 1024)

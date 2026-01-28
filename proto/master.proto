@@ -2,17 +2,15 @@ syntax = "proto3";
 
 package ares;
 option go_package = "./proto";
-import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 
 service RuleEngine {
   rpc Transaction (Request) returns (Response);
 }
 
 message Request {
-  string traceId = 1;
-  string clientId = 2;
-  string transactionId = 3;
-  google.protobuf.Any payload = 4;
+  string transactionId = 1;
+  google.protobuf.Struct payload = 2;
 }
 
 message Response {

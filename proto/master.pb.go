@@ -9,7 +9,7 @@ package proto
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	anypb "google.golang.org/protobuf/types/known/anypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -24,10 +24,8 @@ const (
 
 type Request struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TraceId       string                 `protobuf:"bytes,1,opt,name=traceId,proto3" json:"traceId,omitempty"`
-	ClientId      string                 `protobuf:"bytes,2,opt,name=clientId,proto3" json:"clientId,omitempty"`
-	TransactionId string                 `protobuf:"bytes,3,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
-	Payload       *anypb.Any             `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+	TransactionId string                 `protobuf:"bytes,1,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
+	Payload       *structpb.Struct       `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -62,20 +60,6 @@ func (*Request) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Request) GetTraceId() string {
-	if x != nil {
-		return x.TraceId
-	}
-	return ""
-}
-
-func (x *Request) GetClientId() string {
-	if x != nil {
-		return x.ClientId
-	}
-	return ""
-}
-
 func (x *Request) GetTransactionId() string {
 	if x != nil {
 		return x.TransactionId
@@ -83,7 +67,7 @@ func (x *Request) GetTransactionId() string {
 	return ""
 }
 
-func (x *Request) GetPayload() *anypb.Any {
+func (x *Request) GetPayload() *structpb.Struct {
 	if x != nil {
 		return x.Payload
 	}
@@ -162,12 +146,10 @@ var File_proto_master_proto protoreflect.FileDescriptor
 
 const file_proto_master_proto_rawDesc = "" +
 	"\n" +
-	"\x12proto/master.proto\x12\x04ares\x1a\x19google/protobuf/any.proto\"\x95\x01\n" +
-	"\aRequest\x12\x18\n" +
-	"\atraceId\x18\x01 \x01(\tR\atraceId\x12\x1a\n" +
-	"\bclientId\x18\x02 \x01(\tR\bclientId\x12$\n" +
-	"\rtransactionId\x18\x03 \x01(\tR\rtransactionId\x12.\n" +
-	"\apayload\x18\x04 \x01(\v2\x14.google.protobuf.AnyR\apayload\"\x80\x01\n" +
+	"\x12proto/master.proto\x12\x04ares\x1a\x1cgoogle/protobuf/struct.proto\"b\n" +
+	"\aRequest\x12$\n" +
+	"\rtransactionId\x18\x01 \x01(\tR\rtransactionId\x121\n" +
+	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\"\x80\x01\n" +
 	"\bResponse\x12\x18\n" +
 	"\atraceId\x18\x01 \x01(\tR\atraceId\x12$\n" +
 	"\rtransactionId\x18\x02 \x01(\tR\rtransactionId\x12\x12\n" +
@@ -191,12 +173,12 @@ func file_proto_master_proto_rawDescGZIP() []byte {
 
 var file_proto_master_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_master_proto_goTypes = []any{
-	(*Request)(nil),   // 0: ares.Request
-	(*Response)(nil),  // 1: ares.Response
-	(*anypb.Any)(nil), // 2: google.protobuf.Any
+	(*Request)(nil),         // 0: ares.Request
+	(*Response)(nil),        // 1: ares.Response
+	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
 }
 var file_proto_master_proto_depIdxs = []int32{
-	2, // 0: ares.Request.payload:type_name -> google.protobuf.Any
+	2, // 0: ares.Request.payload:type_name -> google.protobuf.Struct
 	0, // 1: ares.RuleEngine.Transaction:input_type -> ares.Request
 	1, // 2: ares.RuleEngine.Transaction:output_type -> ares.Response
 	2, // [2:3] is the sub-list for method output_type

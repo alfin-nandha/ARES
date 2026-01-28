@@ -7,6 +7,7 @@ import (
 	"ares/service"
 
 	"github.com/gofiber/fiber/v3"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type HttpHandler struct {
@@ -25,10 +26,9 @@ func (h *HttpHandler) HealthCheck(c fiber.Ctx) error {
 
 func (h *HttpHandler) Transaction(c fiber.Ctx) error {
 	appCtx := vo.Parse(c)
-	bind := c.Bind()
 
 	request := proto.Request{}
-	err := bind.Body(&request)
+	err := protojson.Unmarshal(c.Body(), &request)
 	if err != nil {
 	}
 

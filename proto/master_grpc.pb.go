@@ -8,7 +8,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -87,7 +86,7 @@ func RegisterRuleEngineServer(s grpc.ServiceRegistrar, srv RuleEngineServer) {
 	s.RegisterService(&RuleEngine_ServiceDesc, srv)
 }
 
-func _RuleEngine_Transaction_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+func _RuleEngine_Transaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -99,7 +98,7 @@ func _RuleEngine_Transaction_Handler(srv any, ctx context.Context, dec func(any)
 		Server:     srv,
 		FullMethod: RuleEngine_Transaction_FullMethodName,
 	}
-	handler := func(ctx context.Context, req any) (any, error) {
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RuleEngineServer).Transaction(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
