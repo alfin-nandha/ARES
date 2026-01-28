@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"ares/container"
 	"ares/helper/vo"
 	"ares/pkg/session"
 	"context"
@@ -33,34 +34,50 @@ func panicRecoveryInterceptor(
 	return handler(ctx, req)
 }
 
-func sessionInterceptor(
-	ctx context.Context,
-	req any,
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (any, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "no metadata provided")
+func sessionInterceptor(presenter *container.Presenter) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req any,
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (any, error) {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, status.Error(codes.Unauthenticated, "no metadata provided")
+		}
+
+		traceId := fmt.Sprintf("trc-%d", time.Now().UnixNano())
+		metaTraceId := md.Get(vo.TraceId)
+		if len(metaTraceId) != 0 {
+			traceId = metaTraceId[0]
+		}
+
+		var auth string
+		headersAuth := md.Get(vo.Auth)
+		if len(headersAuth) != 0 {
+			auth = headersAuth[0]
+		} else {
+			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+		}
+
+		newSess := session.New().
+			SetTraceId(traceId).
+			SetRequest(req).
+			SetURL(info.FullMethod).
+			SetMetaData(md).
+			SetMethod("gRPC")
+
+			// auth validation
+		err := presenter.Service.AuthValidation(newSess, auth)
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, "unauthorized")
+		}
+
+		newCtx := context.WithValue(ctx, vo.AppSession, *newSess)
+
+		return handler(newCtx, req)
 	}
-
-	traceId := fmt.Sprintf("trc-%d", time.Now().UnixNano())
-	metaTraceId := md.Get(vo.TraceId)
-	if len(metaTraceId) != 0 {
-		traceId = metaTraceId[0]
-	}
-
-	newSess := session.New().
-		SetTraceId(traceId).
-		SetRequest(req).
-		SetURL(info.FullMethod).
-		SetMetaData(md).
-		SetMethod("gRPC")
-	newCtx := context.WithValue(ctx, vo.AppSession, *newSess)
-
-	return handler(newCtx, req)
 }
-
 func logInterceptor(
 	ctx context.Context,
 	req any,
@@ -87,32 +104,4 @@ func logInterceptor(
 	session.LogResponse(duration, code.String(), resp, msg)
 
 	return
-}
-
-func authInterceptor(
-	ctx context.Context,
-	req any,
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (any, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "no metadata provided")
-	}
-
-	traceId := vo.GenerateTraceId()
-	metaTraceId := md.Get(vo.TraceId)
-	if len(metaTraceId) != 0 {
-		traceId = metaTraceId[0]
-	}
-
-	newSess := session.New().
-		SetTraceId(traceId).
-		SetRequest(req).
-		SetURL(info.FullMethod).
-		SetMetaData(md).
-		SetMethod("gRPC")
-	newCtx := context.WithValue(ctx, vo.AppSession, *newSess)
-
-	return handler(newCtx, req)
 }

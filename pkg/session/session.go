@@ -19,7 +19,7 @@ import (
 type Session struct {
 	Map                              Map.ConcurrentMap
 	logger                           *logger.Logger
-	ClientId                         int
+	ClientId                         int64
 	RequestTime                      time.Time
 	Method                           string
 	Url                              string
@@ -38,7 +38,7 @@ func New() *Session {
 	}
 }
 
-func (session *Session) SetClientId(clientId int) *Session {
+func (session *Session) SetClientId(clientId int64) *Session {
 	session.ClientId = clientId
 	return session
 }

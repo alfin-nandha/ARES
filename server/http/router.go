@@ -15,6 +15,6 @@ func routerSetup(engine *fiber.App, presenter Container.Presenter) {
 
 	v1 := api.Group("/v1")
 	// v1.All("/*", presenter.Controller.Simualtor)
-	v1.Post("/transaction", presenter.HttpHandler.Transaction)
+	v1.Post("/transaction", authMiddleware(&presenter), presenter.HttpHandler.Transaction)
 
 }

@@ -23,7 +23,7 @@ func StartServer(ctx context.Context, presenter *container.Presenter) (err error
 
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			sessionInterceptor,
+			sessionInterceptor(presenter),
 			panicRecoveryInterceptor,
 			logInterceptor,
 		),

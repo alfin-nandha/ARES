@@ -18,9 +18,9 @@ import (
 )
 
 func middlewareSetup(app *fiber.App, container *Container.Presenter) {
-	app.Use(sessionMiddleware)
-	app.Use(logMiddleware)
+	app.Use(sessionMiddleware(container))
 	app.Use(recoveryMiddleware)
+	app.Use(logMiddleware)
 	app.Use(cors.New())
 }
 
@@ -40,49 +40,35 @@ func recoveryMiddleware(c fiber.Ctx) (err error) {
 	return c.Next()
 }
 
-// func validateJwt(c *fiber.Ctx) (err error) {
-// 	rawJwt := c.Get(Constant.AUTHORIZATION)
-// 	splittedJwt := strings.Split(rawJwt, " ")
-// 	if len(splittedJwt) < 2 {
-// 		return c.JSON(response.UNAUTHORIZED)
-// 	}
-// 	claims, err := token.ValidateToken(splittedJwt[1])
-// 	if err != nil {
-// 		return c.JSON(response.UNAUTHORIZED)
-// 	}
+func sessionMiddleware(presenter *Container.Presenter) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		traceId := vo.GenerateTraceId()
 
-// 	c.Set(Constant.USERNAME, claims.Username)
-// 	return c.Next()
-// }
+		headers := c.GetReqHeaders()
+		headersTraceId := headers[vo.TraceId]
+		if len(headersTraceId) != 0 {
+			traceId = headersTraceId[0]
+		}
 
-func sessionMiddleware(c fiber.Ctx) error {
-	traceId := vo.GenerateTraceId()
+		// campact json requestBody
+		bodyMap := map[string]any{}
+		bodyByte := c.Body()
+		err := json.Unmarshal(bodyByte, &bodyMap)
+		if err == nil {
+			bodyByte, _ = json.Marshal(bodyMap)
+		}
 
-	headers := c.GetReqHeaders()
-	headersTraceId := headers[vo.TraceId]
-	if len(headersTraceId) != 0 {
-		traceId = headersTraceId[0]
+		newSess := session.New().
+			SetTraceId(traceId).
+			SetRequest(bodyByte).
+			SetURL(c.OriginalURL()).
+			SetHeader(headers).
+			SetQuery(c.Queries()).
+			SetMethod(c.Method())
+
+		c.Locals(vo.AppSession, *newSess)
+		return c.Next()
 	}
-
-	// campact json requestBody
-	bodyMap := map[string]any{}
-	bodyByte := c.Body()
-	err := json.Unmarshal(bodyByte, &bodyMap)
-	if err == nil {
-		bodyByte, _ = json.Marshal(bodyMap)
-	}
-
-	newSess := session.New().
-		SetTraceId(traceId).
-		SetRequest(bodyByte).
-		SetURL(c.OriginalURL()).
-		SetHeader(headers).
-		SetQuery(c.Queries()).
-		SetMethod(c.Method())
-
-	c.Locals(vo.AppSession, *newSess)
-
-	return c.Next()
 }
 
 func logMiddleware(c fiber.Ctx) error {
@@ -92,18 +78,49 @@ func logMiddleware(c fiber.Ctx) error {
 	// log request
 	session.LogRequest(nil)
 
-	// Proceed with the request
 	code := strconv.Itoa(c.Response().StatusCode())
 	msg := ""
+
 	err := c.Next()
 	if err != nil {
 		msg = err.Error()
 	}
 
-	// Log the response
-	session.LogResponse(time.Since(start), code, string(c.Response().Body()), msg)
+	bodyMap := map[string]any{}
+	bodyByte := c.Response().Body()
+	err = json.Unmarshal(bodyByte, &bodyMap)
+	if err == nil {
+		bodyByte, _ = json.Marshal(bodyMap)
+	}
 
-	return err
+	// Log the response
+	session.LogResponse(time.Since(start), code, string(bodyByte), msg)
+
+	return nil
+}
+
+func authMiddleware(presenter *Container.Presenter) fiber.Handler {
+	return func(c fiber.Ctx) error {
+
+		headers := c.GetReqHeaders()
+		session := c.Locals(vo.AppSession).(session.Session)
+
+		var auth string
+		headersAuth := headers[vo.Auth]
+		if len(headersAuth) != 0 {
+			auth = headersAuth[0]
+		} else {
+			return c.JSON("unauthorized")
+		}
+
+		// auth validation
+		err := presenter.Service.AuthValidation(&session, auth)
+		if err != nil {
+			return c.JSON("unauthorized")
+		}
+
+		return c.Next()
+	}
 }
 
 func ErrorHandler(c fiber.Ctx, err error) error {

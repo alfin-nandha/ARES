@@ -14,6 +14,7 @@ type Service struct {
 
 type ServiceInt interface {
 	Transaction(session *session.Session, request *proto.Request) (*proto.Response, error)
+	AuthValidation(session *session.Session, auth string) error
 }
 
 func New(repo repository.RepositoryInt, redis redis.RedisInt) ServiceInt {

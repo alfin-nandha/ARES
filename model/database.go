@@ -1,8 +1,10 @@
 package model
 
 type Client struct {
-	Id   int64  `gorm:"column:id"`
-	Name string `gorm:"column:name"`
+	Id           int64  `gorm:"column:id"`
+	Name         string `gorm:"column:name"`
+	Username     string `gorm:"column:username"`
+	PasswordHash string `gorm:"column:password"`
 }
 
 func (*Client) TableName() string {

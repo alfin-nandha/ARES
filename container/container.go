@@ -16,7 +16,8 @@ type Presenter struct {
 	GrpcHandler proto.RuleEngineServer
 	HttpHandler handler.HttpHandler
 	Redis       redis.RedisInt
-	service     service.ServiceInt
+	Service     service.ServiceInt
+	Repository  repository.RepositoryInt
 }
 
 func New() (*Presenter, *session.Session) {
@@ -36,6 +37,7 @@ func New() (*Presenter, *session.Session) {
 	return &Presenter{
 		GrpcHandler: grpcHandler,
 		HttpHandler: *httpHandler,
-		service:     serv,
+		Service:     serv,
+		Repository:  repo,
 	}, startUpSession
 }

@@ -12,7 +12,6 @@ import (
 
 func StartServer(ctx context.Context, presenter *container.Presenter) error {
 	app := fiber.New()
-
 	middlewareSetup(app, presenter)
 	routerSetup(app, *presenter)
 

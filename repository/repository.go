@@ -12,7 +12,7 @@ type Repository struct {
 }
 
 type RepositoryInt interface {
-	GetClient(session *session.Session) (model.Client, error)
+	GetClient(session *session.Session, username string) (model.Client, error)
 	GetRuleByClientId(session *session.Session) ([]model.Rule, error)
 }
 
