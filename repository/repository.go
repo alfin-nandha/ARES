@@ -8,16 +8,22 @@ import (
 )
 
 type Repository struct {
-	Psql *gorm.DB
+	session *session.Session
+	Psql    *gorm.DB
 }
 
 type RepositoryInt interface {
-	GetClient(session *session.Session, username string) (model.Client, error)
-	GetRuleByClientId(session *session.Session) ([]model.Rule, error)
+	SetSession(session *session.Session)
+	GetClient(username string) (model.Client, error)
+	GetRuleByClientId() ([]model.Rule, error)
 }
 
 func New(db *gorm.DB) RepositoryInt {
 	return &Repository{
 		Psql: db,
 	}
+}
+
+func (r *Repository) SetSession(s *session.Session) {
+	r.session = s
 }

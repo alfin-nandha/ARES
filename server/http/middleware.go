@@ -67,6 +67,7 @@ func sessionMiddleware(presenter *Container.Presenter) fiber.Handler {
 			SetMethod(c.Method())
 
 		c.Locals(vo.AppSession, *newSess)
+		presenter.SetSession(newSess)
 		return c.Next()
 	}
 }
@@ -103,7 +104,6 @@ func authMiddleware(presenter *Container.Presenter) fiber.Handler {
 	return func(c fiber.Ctx) error {
 
 		headers := c.GetReqHeaders()
-		session := c.Locals(vo.AppSession).(session.Session)
 
 		var auth string
 		headersAuth := headers[vo.Auth]
@@ -114,7 +114,7 @@ func authMiddleware(presenter *Container.Presenter) fiber.Handler {
 		}
 
 		// auth validation
-		err := presenter.Service.AuthValidation(&session, auth)
+		err := presenter.Service.AuthValidation(auth)
 		if err != nil {
 			return c.JSON("unauthorized")
 		}

@@ -8,13 +8,15 @@ import (
 )
 
 type Service struct {
-	repo  repository.RepositoryInt
-	redis redis.RedisInt
+	session *session.Session
+	repo    repository.RepositoryInt
+	redis   redis.RedisInt
 }
 
 type ServiceInt interface {
-	Transaction(session *session.Session, request *proto.Request) (*proto.Response, error)
-	AuthValidation(session *session.Session, auth string) error
+	SetSession(session *session.Session)
+	Transaction(request *proto.Request) (*proto.Response, error)
+	AuthValidation(auth string) error
 }
 
 func New(repo repository.RepositoryInt, redis redis.RedisInt) ServiceInt {
@@ -22,4 +24,8 @@ func New(repo repository.RepositoryInt, redis redis.RedisInt) ServiceInt {
 		repo:  repo,
 		redis: redis,
 	}
+}
+
+func (s *Service) SetSession(session *session.Session) {
+	s.session = session
 }

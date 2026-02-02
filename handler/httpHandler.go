@@ -2,7 +2,6 @@ package handler
 
 import (
 	"ares/helper/response"
-	"ares/helper/vo"
 	"ares/proto"
 	"ares/service"
 
@@ -25,14 +24,12 @@ func (h *HttpHandler) HealthCheck(c fiber.Ctx) error {
 }
 
 func (h *HttpHandler) Transaction(c fiber.Ctx) error {
-	appCtx := vo.Parse(c)
-
 	request := proto.Request{}
 	err := protojson.Unmarshal(c.Body(), &request)
 	if err != nil {
 	}
 
-	resp, err := h.Service.Transaction(appCtx.Session, &request)
+	resp, err := h.Service.Transaction(&request)
 	if err != nil {
 		return err
 	}

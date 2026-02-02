@@ -67,8 +67,10 @@ func sessionInterceptor(presenter *container.Presenter) grpc.UnaryServerIntercep
 			SetMetaData(md).
 			SetMethod("gRPC")
 
-			// auth validation
-		err := presenter.Service.AuthValidation(newSess, auth)
+		presenter.SetSession(newSess)
+
+		// auth validation
+		err := presenter.Service.AuthValidation(auth)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, "unauthorized")
 		}

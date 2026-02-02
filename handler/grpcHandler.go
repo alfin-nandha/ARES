@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"ares/helper/vo"
 	"ares/proto"
 	"ares/service"
 	context "context"
@@ -19,8 +18,6 @@ func NewGrpc(service service.ServiceInt) proto.RuleEngineServer {
 }
 
 func (h *GrpcHandler) Transaction(ctx context.Context, req *proto.Request) (resp *proto.Response, err error) {
-	appCtx := vo.Parse(ctx)
-
-	resp, err = h.service.Transaction(appCtx.Session, req)
+	resp, err = h.service.Transaction(req)
 	return
 }

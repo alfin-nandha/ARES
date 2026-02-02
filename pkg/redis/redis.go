@@ -10,14 +10,16 @@ import (
 )
 
 type RedisInt interface {
-	DeleteRedisKey(session *session.Session, key string) error
-	GetRedisKey(session *session.Session, key string) (string, int)
-	SaveRedis(session *session.Session, key string, val any) error
-	SaveRedisExp(session *session.Session, key string, minutes string, val any) error
+	SetSession(session *session.Session)
+	DeleteRedisKey(key string) error
+	GetRedisKey(key string) (string, int)
+	SaveRedis(key string, val any) error
+	SaveRedisExp(key string, minutes string, val any) error
 }
 
 type Redis struct {
-	Client *redis.Client
+	session *session.Session
+	client  *redis.Client
 }
 
 func New(session *session.Session, r config.Cache) RedisInt {
@@ -32,25 +34,29 @@ func New(session *session.Session, r config.Cache) RedisInt {
 	}
 	session.LogInfo("REDIS Connected")
 	return &Redis{
-		Client: redisClient,
+		client: redisClient,
 	}
+}
+
+func (r *Redis) SetSession(s *session.Session) {
+	r.session = s
 }
 
 /*
 Redis Standard Get
 */
-func (r *Redis) GetRedisKey(session *session.Session, key string) (string, int) {
+func (r *Redis) GetRedisKey(key string) (string, int) {
 
-	val2, err := r.Client.Get(session.Ctx, key).Result()
+	val2, err := r.client.Get(r.session.Ctx, key).Result()
 	if err == redis.Nil {
-		session.LogInfo("REDIS Get Key Not Found", key)
+		r.session.LogInfo("REDIS Get Key Not Found", key)
 		return val2, 1
 	} else if err != nil {
-		session.LogInfo("REDIS Get Key + Error", err.Error())
+		r.session.LogInfo("REDIS Get Key + Error", err.Error())
 		return val2, -1
 
 	} else {
-		session.LogInfo("REDIS Get Key Success", key)
+		r.session.LogInfo("REDIS Get Key Success", key)
 		return val2, 0
 	}
 
@@ -59,46 +65,46 @@ func (r *Redis) GetRedisKey(session *session.Session, key string) (string, int) 
 /*
 Redis Standard Set
 */
-func (r *Redis) SaveRedis(session *session.Session, key string, val any) error {
+func (r *Redis) SaveRedis(key string, val any) error {
 	var err error
 	for i := 0; i < 3; i++ {
-		err = r.Client.Set(session.Ctx, key, val, 0).Err()
+		err = r.client.Set(r.session.Ctx, key, val, 0).Err()
 		if err == nil {
-			session.LogInfo("REDIS save key success", key)
+			r.session.LogInfo("REDIS save key success", key)
 			return err
 		}
 	}
-	session.LogError("REDIS Save Key "+key+" Error ", err.Error())
+	r.session.LogError("REDIS Save Key "+key+" Error ", err.Error())
 	return err
 }
 
 /*
 Redis Standard Set Expired
 */
-func (r *Redis) SaveRedisExp(session *session.Session, key string, menit string, val any) error {
+func (r *Redis) SaveRedisExp(key string, menit string, val any) error {
 	var err error
 	for i := 0; i < 3; i++ {
 		duration, _ := time.ParseDuration(menit + "s")
 
-		err := r.Client.Set(session.Ctx, key, val, duration).Err()
+		err := r.client.Set(r.session.Ctx, key, val, duration).Err()
 		if err == nil {
-			session.LogInfo("REDIS save key " + key + " success with duration " + duration.String())
+			r.session.LogInfo("REDIS save key " + key + " success with duration " + duration.String())
 			return err
 		}
 	}
-	session.LogError("REDIS Save Key "+key+" Error ", err)
+	r.session.LogError("REDIS Save Key "+key+" Error ", err)
 	return err
 }
 
 /*
 Redis Standard Delete
 */
-func (r *Redis) DeleteRedisKey(session *session.Session, key string) error {
+func (r *Redis) DeleteRedisKey(key string) error {
 	var err error
 	for i := 0; i < 3; i++ {
-		err := r.Client.Del(session.Ctx, key).Err()
+		err := r.client.Del(r.session.Ctx, key).Err()
 		if err == nil {
-			session.LogInfo("REDIS Delete key " + key + " success")
+			r.session.LogInfo("REDIS Delete key " + key + " success")
 			break
 		}
 	}

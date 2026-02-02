@@ -39,5 +39,12 @@ func New() (*Presenter, *session.Session) {
 		HttpHandler: *httpHandler,
 		Service:     serv,
 		Repository:  repo,
+		Redis:       redis,
 	}, startUpSession
+}
+
+func (p *Presenter) SetSession(s *session.Session) {
+	p.Repository.SetSession(s)
+	p.Service.SetSession(s)
+	p.Redis.SetSession(s)
 }

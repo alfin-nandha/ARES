@@ -4,14 +4,13 @@ import (
 	"ares/helper/vo"
 	"ares/model"
 	"ares/pkg/grule"
-	"ares/pkg/session"
 	"ares/proto"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *Service) AuthValidation(session *session.Session, auth string) (err error) {
+func (s *Service) AuthValidation(auth string) (err error) {
 
 	authData := vo.AuthDecode(auth)
 	if !authData.IsValid {
@@ -19,7 +18,7 @@ func (s *Service) AuthValidation(session *session.Session, auth string) (err err
 		return
 	}
 
-	client, err := s.repo.GetClient(session, authData.Username)
+	client, err := s.repo.GetClient(authData.Username)
 	if err != nil {
 		return
 	}
@@ -29,11 +28,11 @@ func (s *Service) AuthValidation(session *session.Session, auth string) (err err
 		return err
 	}
 
-	session.SetClientId(client.Id)
+	s.session.SetClientId(client.Id)
 	return nil
 }
 
-func (s *Service) Transaction(session *session.Session, request *proto.Request) (response *proto.Response, err error) {
+func (s *Service) Transaction(request *proto.Request) (response *proto.Response, err error) {
 	// get rule
 	rule := `rule IsKaya "Apply orkay discount" salience 10 {
 		when
