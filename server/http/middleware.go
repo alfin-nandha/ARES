@@ -78,25 +78,25 @@ func logMiddleware(c fiber.Ctx) error {
 
 	// log request
 	session.LogRequest(nil)
-
 	code := strconv.Itoa(c.Response().StatusCode())
 	msg := ""
 
 	err := c.Next()
 	if err != nil {
 		msg = err.Error()
+		resp := response.HttpResponse(response.INTERNAL_ERROR)
+		session.LogResponse(time.Since(start), code, resp, msg)
+		return c.JSON(resp)
 	}
 
-	bodyMap := map[string]any{}
+	resp := map[string]any{}
 	bodyByte := c.Response().Body()
-	err = json.Unmarshal(bodyByte, &bodyMap)
+	err = json.Unmarshal(bodyByte, &resp)
 	if err == nil {
-		bodyByte, _ = json.Marshal(bodyMap)
+		fmt.Println(err)
+		bodyByte, _ = json.Marshal(resp)
 	}
-
-	// Log the response
-	session.LogResponse(time.Since(start), code, string(bodyByte), msg)
-
+	session.LogResponse(time.Since(start), code, resp, msg)
 	return nil
 }
 

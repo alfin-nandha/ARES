@@ -148,7 +148,7 @@ func (session *Session) LogInfo(message any, data ...any) {
 	)
 }
 
-func (session *Session) LogError(message any, data any) {
+func (session *Session) LogError(message any, data ...any) {
 	session.logger.Info("Error",
 		zap.String("TraceId", session.TraceId),
 		zap.Any("Message", message),

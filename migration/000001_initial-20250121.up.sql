@@ -12,7 +12,6 @@ CREATE TABLE public.clients (
 -- Create Fraud Rules Table
 CREATE TABLE public.fraud_rules (
     id SERIAL PRIMARY KEY,
-    client_id INTEGER NOT NULL,
     rule_name VARCHAR(100) NOT NULL,
     description TEXT,
     drl_content TEXT NOT NULL, -- The actual Grule DRL logic
@@ -21,10 +20,24 @@ CREATE TABLE public.fraud_rules (
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_client FOREIGN KEY (client_id) REFERENCES public.clients (id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_fraud_rules_active ON public.fraud_rules (is_active);
+
+-- Create Fraud Rules Table
+CREATE TABLE public.rule_groups (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL,
+    group_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    version INTEGER DEFAULT 1,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_client FOREIGN KEY (client_id) REFERENCES public.clients (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_rule_groups_active ON public.rule_group (is_active);
 
 CREATE TABLE public.data_templates (
     id SERIAL PRIMARY KEY,

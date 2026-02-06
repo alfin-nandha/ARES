@@ -3,6 +3,7 @@ syntax = "proto3";
 package ares;
 option go_package = "./proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 service RuleEngine {
   rpc Transaction (Request) returns (Response);
@@ -13,9 +14,41 @@ message Request {
   google.protobuf.Struct payload = 2;
 }
 
+
 message Response {
-  string traceId = 1;
-  string transactionId = 2;
-  int64 code = 3;
-  string description = 4;
+  string transaction_id = 1;
+  ResponseStatus status = 2;
+  Decision decision = 3;
+  ExecutionContext execution_context = 5;
+  EvaluationResults results = 6;
+}
+
+message ResponseStatus {
+  string code = 1;       
+  string description = 2; 
+  int32 internal_code = 3; 
+}
+
+enum Decision {
+  DECISION_UNSPECIFIED = 0;
+  APPROVE = 1;
+  DECLINE = 2;
+  REVIEW = 3;
+  CHALLENGE = 4;
+}
+
+message ExecutionContext {
+  string rule_set_version = 1;
+  google.protobuf.Timestamp processed_at = 2;
+  int32 latency_ms = 3;
+}
+
+message EvaluationResults {
+  repeated TriggeredRule triggered_rules = 1;
+}
+
+message TriggeredRule {
+  string id = 1;
+  string name = 2;
+  string impact = 3; // e.g., "CRITICAL", "HIGH", "LOW"
 }

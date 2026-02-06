@@ -16,6 +16,7 @@ type RepositoryInt interface {
 	SetSession(session *session.Session)
 	GetClient(username string) (model.Client, error)
 	GetRuleByClientId() ([]model.Rule, error)
+	GetActiveRules() (rules model.RuleSet, err error)
 }
 
 func New(db *gorm.DB) RepositoryInt {

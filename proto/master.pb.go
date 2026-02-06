@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -21,6 +22,61 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+type Decision int32
+
+const (
+	Decision_DECISION_UNSPECIFIED Decision = 0
+	Decision_APPROVE              Decision = 1
+	Decision_DECLINE              Decision = 2
+	Decision_REVIEW               Decision = 3
+	Decision_CHALLENGE            Decision = 4
+)
+
+// Enum value maps for Decision.
+var (
+	Decision_name = map[int32]string{
+		0: "DECISION_UNSPECIFIED",
+		1: "APPROVE",
+		2: "DECLINE",
+		3: "REVIEW",
+		4: "CHALLENGE",
+	}
+	Decision_value = map[string]int32{
+		"DECISION_UNSPECIFIED": 0,
+		"APPROVE":              1,
+		"DECLINE":              2,
+		"REVIEW":               3,
+		"CHALLENGE":            4,
+	}
+)
+
+func (x Decision) Enum() *Decision {
+	p := new(Decision)
+	*p = x
+	return p
+}
+
+func (x Decision) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Decision) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_master_proto_enumTypes[0].Descriptor()
+}
+
+func (Decision) Type() protoreflect.EnumType {
+	return &file_proto_master_proto_enumTypes[0]
+}
+
+func (x Decision) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Decision.Descriptor instead.
+func (Decision) EnumDescriptor() ([]byte, []int) {
+	return file_proto_master_proto_rawDescGZIP(), []int{0}
+}
 
 type Request struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -75,13 +131,14 @@ func (x *Request) GetPayload() *structpb.Struct {
 }
 
 type Response struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TraceId       string                 `protobuf:"bytes,1,opt,name=traceId,proto3" json:"traceId,omitempty"`
-	TransactionId string                 `protobuf:"bytes,2,opt,name=transactionId,proto3" json:"transactionId,omitempty"`
-	Code          int64                  `protobuf:"varint,3,opt,name=code,proto3" json:"code,omitempty"`
-	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TransactionId    string                 `protobuf:"bytes,1,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
+	Status           *ResponseStatus        `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Decision         Decision               `protobuf:"varint,3,opt,name=decision,proto3,enum=ares.Decision" json:"decision,omitempty"`
+	ExecutionContext *ExecutionContext      `protobuf:"bytes,5,opt,name=execution_context,json=executionContext,proto3" json:"execution_context,omitempty"`
+	Results          *EvaluationResults     `protobuf:"bytes,6,opt,name=results,proto3" json:"results,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Response) Reset() {
@@ -114,13 +171,6 @@ func (*Response) Descriptor() ([]byte, []int) {
 	return file_proto_master_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Response) GetTraceId() string {
-	if x != nil {
-		return x.TraceId
-	}
-	return ""
-}
-
 func (x *Response) GetTransactionId() string {
 	if x != nil {
 		return x.TransactionId
@@ -128,16 +178,254 @@ func (x *Response) GetTransactionId() string {
 	return ""
 }
 
-func (x *Response) GetCode() int64 {
+func (x *Response) GetStatus() *ResponseStatus {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+func (x *Response) GetDecision() Decision {
+	if x != nil {
+		return x.Decision
+	}
+	return Decision_DECISION_UNSPECIFIED
+}
+
+func (x *Response) GetExecutionContext() *ExecutionContext {
+	if x != nil {
+		return x.ExecutionContext
+	}
+	return nil
+}
+
+func (x *Response) GetResults() *EvaluationResults {
+	if x != nil {
+		return x.Results
+	}
+	return nil
+}
+
+type ResponseStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	InternalCode  int32                  `protobuf:"varint,3,opt,name=internal_code,json=internalCode,proto3" json:"internal_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResponseStatus) Reset() {
+	*x = ResponseStatus{}
+	mi := &file_proto_master_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResponseStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResponseStatus) ProtoMessage() {}
+
+func (x *ResponseStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_master_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResponseStatus.ProtoReflect.Descriptor instead.
+func (*ResponseStatus) Descriptor() ([]byte, []int) {
+	return file_proto_master_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ResponseStatus) GetCode() string {
 	if x != nil {
 		return x.Code
+	}
+	return ""
+}
+
+func (x *ResponseStatus) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ResponseStatus) GetInternalCode() int32 {
+	if x != nil {
+		return x.InternalCode
 	}
 	return 0
 }
 
-func (x *Response) GetDescription() string {
+type ExecutionContext struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	RuleSetVersion string                 `protobuf:"bytes,1,opt,name=rule_set_version,json=ruleSetVersion,proto3" json:"rule_set_version,omitempty"`
+	ProcessedAt    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=processed_at,json=processedAt,proto3" json:"processed_at,omitempty"`
+	LatencyMs      int32                  `protobuf:"varint,3,opt,name=latency_ms,json=latencyMs,proto3" json:"latency_ms,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ExecutionContext) Reset() {
+	*x = ExecutionContext{}
+	mi := &file_proto_master_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExecutionContext) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExecutionContext) ProtoMessage() {}
+
+func (x *ExecutionContext) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_master_proto_msgTypes[3]
 	if x != nil {
-		return x.Description
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExecutionContext.ProtoReflect.Descriptor instead.
+func (*ExecutionContext) Descriptor() ([]byte, []int) {
+	return file_proto_master_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ExecutionContext) GetRuleSetVersion() string {
+	if x != nil {
+		return x.RuleSetVersion
+	}
+	return ""
+}
+
+func (x *ExecutionContext) GetProcessedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ProcessedAt
+	}
+	return nil
+}
+
+func (x *ExecutionContext) GetLatencyMs() int32 {
+	if x != nil {
+		return x.LatencyMs
+	}
+	return 0
+}
+
+type EvaluationResults struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TriggeredRules []*TriggeredRule       `protobuf:"bytes,1,rep,name=triggered_rules,json=triggeredRules,proto3" json:"triggered_rules,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *EvaluationResults) Reset() {
+	*x = EvaluationResults{}
+	mi := &file_proto_master_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EvaluationResults) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EvaluationResults) ProtoMessage() {}
+
+func (x *EvaluationResults) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_master_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EvaluationResults.ProtoReflect.Descriptor instead.
+func (*EvaluationResults) Descriptor() ([]byte, []int) {
+	return file_proto_master_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *EvaluationResults) GetTriggeredRules() []*TriggeredRule {
+	if x != nil {
+		return x.TriggeredRules
+	}
+	return nil
+}
+
+type TriggeredRule struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Impact        string                 `protobuf:"bytes,3,opt,name=impact,proto3" json:"impact,omitempty"` // e.g., "CRITICAL", "HIGH", "LOW"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TriggeredRule) Reset() {
+	*x = TriggeredRule{}
+	mi := &file_proto_master_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TriggeredRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TriggeredRule) ProtoMessage() {}
+
+func (x *TriggeredRule) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_master_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TriggeredRule.ProtoReflect.Descriptor instead.
+func (*TriggeredRule) Descriptor() ([]byte, []int) {
+	return file_proto_master_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *TriggeredRule) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *TriggeredRule) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *TriggeredRule) GetImpact() string {
+	if x != nil {
+		return x.Impact
 	}
 	return ""
 }
@@ -146,15 +434,38 @@ var File_proto_master_proto protoreflect.FileDescriptor
 
 const file_proto_master_proto_rawDesc = "" +
 	"\n" +
-	"\x12proto/master.proto\x12\x04ares\x1a\x1cgoogle/protobuf/struct.proto\"b\n" +
+	"\x12proto/master.proto\x12\x04ares\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"b\n" +
 	"\aRequest\x12$\n" +
 	"\rtransactionId\x18\x01 \x01(\tR\rtransactionId\x121\n" +
-	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\"\x80\x01\n" +
-	"\bResponse\x12\x18\n" +
-	"\atraceId\x18\x01 \x01(\tR\atraceId\x12$\n" +
-	"\rtransactionId\x18\x02 \x01(\tR\rtransactionId\x12\x12\n" +
-	"\x04code\x18\x03 \x01(\x03R\x04code\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription2:\n" +
+	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\"\x83\x02\n" +
+	"\bResponse\x12%\n" +
+	"\x0etransaction_id\x18\x01 \x01(\tR\rtransactionId\x12,\n" +
+	"\x06status\x18\x02 \x01(\v2\x14.ares.ResponseStatusR\x06status\x12*\n" +
+	"\bdecision\x18\x03 \x01(\x0e2\x0e.ares.DecisionR\bdecision\x12C\n" +
+	"\x11execution_context\x18\x05 \x01(\v2\x16.ares.ExecutionContextR\x10executionContext\x121\n" +
+	"\aresults\x18\x06 \x01(\v2\x17.ares.EvaluationResultsR\aresults\"k\n" +
+	"\x0eResponseStatus\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12#\n" +
+	"\rinternal_code\x18\x03 \x01(\x05R\finternalCode\"\x9a\x01\n" +
+	"\x10ExecutionContext\x12(\n" +
+	"\x10rule_set_version\x18\x01 \x01(\tR\x0eruleSetVersion\x12=\n" +
+	"\fprocessed_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\vprocessedAt\x12\x1d\n" +
+	"\n" +
+	"latency_ms\x18\x03 \x01(\x05R\tlatencyMs\"Q\n" +
+	"\x11EvaluationResults\x12<\n" +
+	"\x0ftriggered_rules\x18\x01 \x03(\v2\x13.ares.TriggeredRuleR\x0etriggeredRules\"K\n" +
+	"\rTriggeredRule\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06impact\x18\x03 \x01(\tR\x06impact*Y\n" +
+	"\bDecision\x12\x18\n" +
+	"\x14DECISION_UNSPECIFIED\x10\x00\x12\v\n" +
+	"\aAPPROVE\x10\x01\x12\v\n" +
+	"\aDECLINE\x10\x02\x12\n" +
+	"\n" +
+	"\x06REVIEW\x10\x03\x12\r\n" +
+	"\tCHALLENGE\x10\x042:\n" +
 	"\n" +
 	"RuleEngine\x12,\n" +
 	"\vTransaction\x12\r.ares.Request\x1a\x0e.ares.ResponseB\tZ\a./protob\x06proto3"
@@ -171,21 +482,34 @@ func file_proto_master_proto_rawDescGZIP() []byte {
 	return file_proto_master_proto_rawDescData
 }
 
-var file_proto_master_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_master_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_master_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_master_proto_goTypes = []any{
-	(*Request)(nil),         // 0: ares.Request
-	(*Response)(nil),        // 1: ares.Response
-	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
+	(Decision)(0),                 // 0: ares.Decision
+	(*Request)(nil),               // 1: ares.Request
+	(*Response)(nil),              // 2: ares.Response
+	(*ResponseStatus)(nil),        // 3: ares.ResponseStatus
+	(*ExecutionContext)(nil),      // 4: ares.ExecutionContext
+	(*EvaluationResults)(nil),     // 5: ares.EvaluationResults
+	(*TriggeredRule)(nil),         // 6: ares.TriggeredRule
+	(*structpb.Struct)(nil),       // 7: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 }
 var file_proto_master_proto_depIdxs = []int32{
-	2, // 0: ares.Request.payload:type_name -> google.protobuf.Struct
-	0, // 1: ares.RuleEngine.Transaction:input_type -> ares.Request
-	1, // 2: ares.RuleEngine.Transaction:output_type -> ares.Response
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	7, // 0: ares.Request.payload:type_name -> google.protobuf.Struct
+	3, // 1: ares.Response.status:type_name -> ares.ResponseStatus
+	0, // 2: ares.Response.decision:type_name -> ares.Decision
+	4, // 3: ares.Response.execution_context:type_name -> ares.ExecutionContext
+	5, // 4: ares.Response.results:type_name -> ares.EvaluationResults
+	8, // 5: ares.ExecutionContext.processed_at:type_name -> google.protobuf.Timestamp
+	6, // 6: ares.EvaluationResults.triggered_rules:type_name -> ares.TriggeredRule
+	1, // 7: ares.RuleEngine.Transaction:input_type -> ares.Request
+	2, // 8: ares.RuleEngine.Transaction:output_type -> ares.Response
+	8, // [8:9] is the sub-list for method output_type
+	7, // [7:8] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_master_proto_init() }
@@ -198,13 +522,14 @@ func file_proto_master_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_master_proto_rawDesc), len(file_proto_master_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_master_proto_goTypes,
 		DependencyIndexes: file_proto_master_proto_depIdxs,
+		EnumInfos:         file_proto_master_proto_enumTypes,
 		MessageInfos:      file_proto_master_proto_msgTypes,
 	}.Build()
 	File_proto_master_proto = out.File

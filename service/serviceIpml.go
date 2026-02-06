@@ -2,14 +2,55 @@ package service
 
 import (
 	"ares/helper/vo"
-	"ares/model"
 	"ares/pkg/grule"
 	"ares/proto"
+	"ares/service/core"
+	"encoding/base64"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func (s *Service) Transaction(request *proto.Request) (resp *proto.Response, err error) {
+	ruleSet, err := s.repo.GetActiveRules()
+	if err != nil {
+		s.session.LogError("failed get active rules", err.Error())
+		return
+	} else if len(ruleSet.Rules) == 0 {
+		return
+	}
+
+	coreTrx := core.New(request, s.redis, s.repo)
+	cr := grule.GetNewEngine()
+	cr.SetIDataContext(coreTrx.GetKeyContext(), &coreTrx)
+
+	for _, rule := range ruleSet.Rules {
+		b, _ := base64.StdEncoding.DecodeString(rule.Drl_content)
+		cr.SetKnowledgeBase(rule.RuleName, rule.Version, string(b))
+	}
+
+	// execute customGrule
+	cr.ExecuteRule()
+	resp = &proto.Response{
+		TransactionId: request.TransactionId,
+		Decision:      proto.Decision_APPROVE,
+		ExecutionContext: &proto.ExecutionContext{
+			RuleSetVersion: ruleSet.Version,
+			ProcessedAt:    timestamppb.Now(),
+			LatencyMs:      0,
+		},
+		Status: &proto.ResponseStatus{
+			Code:         "00",
+			Description:  "SUCCESS",
+			InternalCode: 0,
+		},
+	}
+
+	fmt.Println(coreTrx)
+
+	return
+}
 func (s *Service) AuthValidation(auth string) (err error) {
 
 	authData := vo.AuthDecode(auth)
@@ -30,30 +71,4 @@ func (s *Service) AuthValidation(auth string) (err error) {
 
 	s.session.SetClientId(client.Id)
 	return nil
-}
-
-func (s *Service) Transaction(request *proto.Request) (response *proto.Response, err error) {
-	// get rule
-	rule := `rule IsKaya "Apply orkay discount" salience 10 {
-		when
-			Trx.Get("amount") >= 1000
-		then
-			Trx.Set("category", "kaya");
-			Trx.Set("serviceFee", 5.0);
-			Complete();
-		}`
-
-	// parse the request
-	trx := model.FromRequest(request)
-
-	// initiate customGrule
-	cr := grule.GetNewEngine()
-	cr.SetIDataContext(trx.GetKeyContext(), &trx)
-	cr.SetKnowledgeBase("IsKaya", "1", rule)
-
-	// execute customGrule
-	cr.ExecuteRule()
-
-	fmt.Printf("Trx Amount: %v,Category: %v, Fee: $%v\n", trx.Get("amount"), trx.Get("category"), trx.Get("serviceFee"))
-	return
 }

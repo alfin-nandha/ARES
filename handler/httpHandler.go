@@ -20,7 +20,7 @@ func NewHttp(service service.ServiceInt) *HttpHandler {
 }
 
 func (h *HttpHandler) HealthCheck(c fiber.Ctx) error {
-	return c.JSON(response.SUCCESS(nil))
+	return c.JSON(response.OK)
 }
 
 func (h *HttpHandler) Transaction(c fiber.Ctx) error {
@@ -33,5 +33,6 @@ func (h *HttpHandler) Transaction(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(resp)
+
+	return c.JSON(response.HttpResponse(resp))
 }
